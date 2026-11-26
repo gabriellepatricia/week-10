@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRIS Payment &amp; Order Simulator — Sushi Squishy</title>
+  <style>
+    :root {
+      --bg: #fff9fb;
+      --surface: #ffffff;
+      --text: #4a3f45;
+      --text-title: #3d3137;
+      --text-desc: #7a6a72;
+      --muted: #8c7a82;
+      --border: #f5dce4;
+      --pink: #ff5d8f;
+      --pink-hover: #e54879;
+      --pink-deep: #d6336c;
+      --pink-soft: #ffe4ec;
+      --pink-dashed: #ffd6e4;
+      --green: #2b8a57;
+      --green-hover: #216e45;
+      --green-bg: #e6f7ee;
+      --amber: #b87a00;
+      --amber-bg: #fff3cd;
+      --red: #c92a2a;
+      --red-bg: #fff0f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .page-main {
+      flex-grow: 1;
+      padding-bottom: 50px;
+    }
+
+    /* Header & Workflow Navigation */
+    .header {
+      background-color: var(--surface);
+      border-bottom: 2px solid var(--pink-soft);
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 14px rgba(255, 93, 143, 0.06);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-image {
+      display: block;
+      width: 250px;
+      max-width: 100%;
+      height: auto;
+      max-height: 88px;
+      object-fit: contain;
+    }
+
+    .logo-icon {
+      font-size: 36px;
+    }
+
+    .logo h1 {
+      font-size: 24px;
+      color: var(--pink);
+      line-height: 1.2;
+    }
+
+    .logo p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nav-pill {
+      background-color: #fff5f8;
+      color: var(--text);
+      border: 1px solid var(--pink-soft);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-pill:hover {
+      background-color: var(--pink-soft);
+      color: var(--pink-deep);
+    }
+
+    .nav-pill.active {
+      background-color: var(--pink);
+      border-color: var(--pink);
+      color: #ffffff;
+    }
+
+    .cart-badge {
+      background-color: var(--pink);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Hero Banner (Compact like history.html) */
+    .hero {
+      padding: 24px 0 14px;
+    }
+
+    .hero-box {
+      background: linear-gradient(135deg, #ffd6e4 0%, #e7f0ff 100%);
+      padding: 24px 28px;
+      border-radius: 20px;
+      text-align: center;
+      border: 2px solid #ffffff;
+      box-shadow: 0 8px 20px rgba(255, 141, 161, 0.12);
+    }
+
+    .step-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: var(--pink-deep);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+
+    .hero-box h2 {
+      font-size: 23px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .hero-box p {
+      max-width: 640px;
+      margin: 0 auto;
+      font-size: 14.5px;
+      color: #6b5b63;
+    }
+
+    /* Live Sync Pill */
+    .live-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green);
+      background-color: var(--green-bg);
+      border: 1px solid #b7ebd0;
+      padding: 4px 11px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--green);
+      animation: blink 1.4s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Panel & Layout */
+    .panel {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 6px 16px rgba(74, 63, 69, 0.05);
+      margin-top: 12px;
+    }
+
+    .panel-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px dashed var(--pink-dashed);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Target Highlight Card (preserved from original qris-approve.html) */
+    .target-card {
+      background-color: #fff5f8;
+      border: 2px solid var(--pink);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      box-shadow: 0 6px 16px rgba(255, 93, 143, 0.1);
+    }
+
+    .target-tag {
+      display: inline-block;
+      background-color: var(--pink);
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* Filter Bar */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 9px;
+    }
+
+    .btn-primary {
+      background-color: var(--pink);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(255, 93, 143, 0.22);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--pink-hover);
+    }
+
+    .btn-outline {
+      background-color: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background-color: #fff5f8;
+      border-color: #ffc2d4;
+      color: var(--pink-deep);
+    }
+
+    .btn-approve {
+      background-color: var(--green);
+      color: #ffffff;
+    }
+
+    .btn-approve:hover {
+      background-color: var(--green-hover);
+    }
+
+    .btn-reject {
+      background-color: var(--surface);
+      border-color: #ffc9c9;
+      color: var(--red);
+    }
+
+    .btn-reject:hover {
+      background-color: var(--red-bg);
+    }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    table.data-table th,
+    table.data-table td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #f7e9ee;
+      vertical-align: middle;
+    }
+
+    table.data-table th {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--pink-deep);
+      background-color: #fff5f8;
+      white-space: nowrap;
+    }
+
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.data-table tr.row-highlight td {
+      background-color: #fff5f8;
+    }
+
+    .tx-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-title);
+    }
+
+    .tx-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .tx-amount {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--pink-deep);
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .status-pending {
+      background-color: var(--amber-bg);
+      color: var(--amber);
+    }
+
+    .status-paid {
+      background-color: var(--green-bg);
+      color: var(--green);
+    }
+
+    .status-rejected {
+      background-color: var(--red-bg);
+      color: var(--red);
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: currentColor;
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.8); }
+    }
+
+    .action-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Empty State & Activity Log */
+    .empty-state {
+      background-color: var(--surface);
+      border: 1.5px dashed var(--pink-dashed);
+      border-radius: 16px;
+      padding: 36px 20px;
+      text-align: center;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      color: var(--text-title);
+      margin-bottom: 6px;
+    }
+
+    .empty-state p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .log {
+      margin-top: 16px;
+      font-size: 12.5px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: var(--text-title);
+      color: #ffffff;
+      padding: 11px 18px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 8px 22px rgba(61, 49, 55, 0.25);
+      border: 1.5px solid var(--pink);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--surface);
+      border-top: 2px solid var(--pink-soft);
+      padding: 24px 0;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .footer-content p {
+      font-size: 14px;
+      color: #6b5b63;
+    }
+
+    .footer-content .copyright {
+      font-size: 12px;
+      color: #9e8d95;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .hero-box h2 {
+        font-size: 20px;
+      }
+
+      .header-content {
+        justify-content: center;
+        text-align: center;
+      }
+    }
+  
+/* ==========================================================
+   SQUISHY WORLD — QRIS simulator visual skin only
+   ========================================================== */
+:root {
+  --bg: #f5f0df;
+  --surface: #fffdf5;
+  --text: #17152c;
+  --text-title: #17152c;
+  --text-desc: #514d67;
+  --muted: #77728a;
+  --border: #17152c;
+  --pink: #ff3f8e;
+  --pink-hover: #ff78b5;
+  --pink-deep: #c51d69;
+  --pink-soft: #ffcae2;
+  --pink-dashed: #17152c;
+  --green: #236b42;
+  --green-hover: #174b2d;
+  --green-bg: #d6ff8d;
+  --amber: #885000;
+  --amber-bg: #ffe36e;
+  --red: #a51e43;
+  --red-bg: #ffd1d8;
+}
+body {
+  background-color: #f5f0df;
+  background-image: radial-gradient(circle, rgba(23,21,44,.15) 1.15px, transparent 1.3px);
+  background-size: 19px 19px;
+  color: #17152c;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+}
+.container { max-width: 1220px; }
+.header {
+  background: #17152c;
+  border: 0;
+  border-bottom: 5px solid #d6ff36;
+  box-shadow: 0 7px 0 #ff3f8e;
+  padding: 13px 0;
+}
+.logo-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  background: #d6ff36;
+  border: 3px solid #fffdf5;
+  border-radius: 17px 5px 17px 5px;
+  transform: rotate(-8deg);
+  box-shadow: 5px 5px 0 #ff3f8e;
+}
+.logo h1 {
+  color: #d6ff36;
+  font-size: 27px;
+  font-weight: 1000;
+  letter-spacing: -1.5px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 #ff3f8e;
+}
+.logo p { color: #d4d0e8; }
+.nav-pill {
+  color: #fffdf5;
+  background: transparent;
+  border: 1.5px solid #77728a;
+  border-radius: 5px 13px 5px 13px;
+  font-weight: 900;
+}
+.nav-pill:hover { color: #17152c; background: #d6ff36; border-color: #d6ff36; }
+.nav-pill.active { color: #fff; background: #ff3f8e; border-color: #ff3f8e; }
+.cart-badge { color: #17152c; background: #d6ff36; }
+.hero { padding: 34px 0 22px; }
+.hero-box {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  text-align: left;
+  background: #d6ff36;
+  border: 3px solid #17152c;
+  border-radius: 7px 42px 7px 42px;
+  box-shadow: 10px 10px 0 #17152c, 17px 17px 0 #ff3f8e;
+  padding: 32px clamp(22px, 4vw, 52px);
+}
+.hero-box::after {
+  content: "✳";
+  position: absolute;
+  right: 30px;
+  top: 5px;
+  color: #ff3f8e;
+  font-size: 85px;
+  text-shadow: 3px 3px 0 #17152c;
+  pointer-events: none;
+}
+.hero-box h2 {
+  color: #17152c;
+  font-size: clamp(30px, 4.4vw, 54px);
+  line-height: .96;
+  font-weight: 1000;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 #fffdf5;
+}
+.hero-box p { color: #37334f; margin: 0; font-weight: 700; }
+.step-pill {
+  color: #fff;
+  background: #17152c;
+  border: 2px solid #17152c;
+  border-radius: 3px 11px 3px 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+.live-pill {
+  color: #174b2d;
+  background: #d6ff8d;
+  border: 1.5px solid #17152c;
+  border-radius: 4px 12px 4px 12px;
+  font-weight: 950;
+}
+.panel, .target-card {
+  color: #17152c;
+  background: #fffdf5;
+  border: 2px solid #17152c;
+  border-radius: 8px 25px 8px 25px;
+  box-shadow: 7px 7px 0 #17152c;
+}
+.panel-title {
+  color: #17152c;
+  border-bottom: 3px solid #17152c;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+.target-card {
+  background: #ffcae2;
+  border: 2px solid #17152c;
+  box-shadow: 6px 6px 0 #ff3f8e;
+}
+.target-tag {
+  color: #17152c;
+  background: #d6ff36;
+  border: 1.5px solid #17152c;
+  border-radius: 4px 10px 4px 10px;
+  font-weight: 1000;
+}
+.btn {
+  color: #17152c;
+  border: 2px solid #17152c;
+  border-radius: 5px 13px 5px 13px;
+  font-weight: 1000;
+  box-shadow: 3px 3px 0 #17152c;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.btn:hover { transform: translate(-2px,-3px); box-shadow: 6px 6px 0 #17152c; }
+.btn-primary { color: #17152c; background: #ff3f8e; }
+.btn-primary:hover { color: #17152c; background: #ff78b5; }
+.btn-outline { color: #17152c; background: #fffdf5; border-color: #17152c; }
+.btn-outline:hover { color: #17152c; background: #c8caff; border-color: #17152c; }
+.btn-approve { color: #17152c; background: #d6ff36; border-color: #17152c; }
+.btn-approve:hover { background: #b8ed00; }
+.btn-reject { color: #a51e43; background: #ffd1d8; border-color: #17152c; }
+.btn-reject:hover { background: #ffb8c6; }
+.filter-row .btn { border-radius: 4px 12px 4px 12px; }
+table.data-table th {
+  color: #17152c;
+  background: #d6ff36;
+  border-bottom: 2px solid #17152c;
+  font-weight: 1000;
+}
+table.data-table td { border-bottom: 1px solid #dedbe5; }
+table.data-table tr.row-highlight td { background: #ffcae2; }
+.tx-id { color: #17152c; font-weight: 1000; }
+.tx-meta { color: #77728a; }
+.tx-amount { color: #17152c; font-weight: 1000; }
+.status-badge { border: 1.5px solid currentColor; border-radius: 4px 11px 4px 11px; font-weight: 1000; }
+.status-pending { color: #704000; background: #ffe36e; }
+.status-paid { color: #174b2d; background: #d6ff8d; }
+.status-rejected { color: #a51e43; background: #ffd1d8; }
+.empty-state {
+  color: #17152c;
+  background: #fffdf5;
+  border: 2px dashed #17152c;
+  border-radius: 8px 25px 8px 25px;
+}
+.log {
+  color: #17152c;
+  background: #d6ff36;
+  border: 1.5px solid #17152c;
+  border-radius: 5px 12px 5px 12px;
+  padding: 10px;
+  font-weight: 800;
+}
+.toast {
+  color: #17152c;
+  background: #d6ff36;
+  border: 2px solid #17152c;
+  border-radius: 5px 15px 5px 15px;
+  box-shadow: 5px 5px 0 #17152c;
+  font-weight: 1000;
+}
+.footer {
+  color: #fffdf5;
+  background: #17152c;
+  border-top: 6px solid #ff3f8e;
+}
+.footer-content p { color: #fffdf5; }
+.footer-content .copyright { color: #b9b5ce; }
+@media (max-width: 700px) {
+  .header-content { justify-content: center; text-align: center; }
+  .header-nav { justify-content: center; }
+  .hero-box { padding: 28px 20px; box-shadow: 6px 6px 0 #17152c, 10px 10px 0 #ff3f8e; }
+  .hero-box h2 { font-size: 30px; }
+  .hero-box::after { right: 12px; top: 5px; font-size: 48px; }
+  .panel, .target-card { box-shadow: 5px 5px 0 #17152c; }
+}
+
+  
+
+  /* Katalog lebih menonjol dan header tetap terlihat saat halaman digulir */
+  .nav-pill.catalog-link {
+    color: #17152c;
+    background: #d6ff36;
+    border-color: #d6ff36;
+    box-shadow: 3px 3px 0 #ff3f8e;
+  }
+  .nav-pill.catalog-link:hover {
+    color: #17152c;
+    background: #efffa0;
+    border-color: #efffa0;
+  }
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Header & Workflow Navigation -->
+  <header class="header">
+    <div class="container header-content">
+      <a href="../index.html" class="logo">
+        <img src="../logo-sushi-squishy.png" alt="Sushi Squishy" class="logo-image">
+      </a>
+      <nav class="header-nav" aria-label="Navigasi Utama">
+        <a href="../index.html" class="nav-pill catalog-link">Buka Toko</a>
+        <a href="./" class="nav-pill active">Admin QRIS</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="hero">
+    <div class="container hero-box">
+      <span class="step-pill">Status Tersinkronisasi Realtime</span>
+      <h2>🍥 QRIS Payment &amp; Order Simulator</h2>
+      <p>Pantau seluruh pesanan squishy dan lakukan simulasi Approve atau Tolak pembayaran QRIS secara realtime.</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container page-main">
+    <div id="sim-root"></div>
+    <div id="sim-log" class="log"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <p><strong>Sushi Squishy</strong> &mdash; Jl. Pelangi Manis No. 18, Bandung</p>
+      <p class="copyright">&copy; 2025 Sushi Squishy. Simulasi Pemesanan &amp; Pembayaran QRIS.</p>
+    </div>
+  </footer>
+
+  <script>
+(function () {
+      "use strict";
+
+      const CART_KEY = "ss_cart_v1";
+      const ORDERS_KEY = "ss_orders_v1";
+      const CHANNEL_NAME = "sushi_squishy_realtime_v1";
+
+      const root = document.getElementById("sim-root");
+      const logEl = document.getElementById("sim-log");
+      const cartCountEl = document.getElementById("nav-cart-count");
+      const params = new URLSearchParams(window.location.search);
+      const focusOrderId = params.get("order") || "";
+
+      let activeFilter = "ALL";
+      let lastSignature = "";
+      let toastTimer = null;
+
+      let channel = null;
+      if (typeof BroadcastChannel !== "undefined") {
+        try {
+          channel = new BroadcastChannel(CHANNEL_NAME);
+        } catch (_) {
+          channel = null;
+        }
+      }
+
+      function escapeHtml(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function formatRupiah(amount) {
+        return "Rp " + (Number(amount) || 0).toLocaleString("id-ID");
+      }
+
+      function formatWaktu(isoString) {
+        if (!isoString) return "-";
+        return new Date(isoString).toLocaleString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
+
+      function showToast(message) {
+        let el = document.getElementById("ss-toast");
+        if (!el) {
+          el = document.createElement("div");
+          el.id = "ss-toast";
+          el.className = "toast";
+          document.body.appendChild(el);
+        }
+        el.textContent = message;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          el.classList.remove("show");
+        }, 2500);
+      }
+
+      function updateCartBadge() {
+        if (!cartCountEl) return;
+        try {
+          const raw = localStorage.getItem(CART_KEY);
+          const cart = raw ? JSON.parse(raw) : [];
+          const count = Array.isArray(cart)
+            ? cart.reduce(function (sum, item) {
+                return sum + (parseInt(item.qty, 10) || 0);
+              }, 0)
+            : 0;
+          cartCountEl.textContent = String(count);
+        } catch (_) {
+          cartCountEl.textContent = "0";
+        }
+      }
+
+      function getOrders() {
+        try {
+          const raw = localStorage.getItem(ORDERS_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+          return [];
+        }
+      }
+
+      function setOrderStatus(orderId, newStatus) {
+        const orders = getOrders();
+        const target = orders.find(function (o) {
+          return o.id === orderId;
+        });
+        if (!target) return;
+
+        target.status = newStatus;
+        if (newStatus === "PAID") {
+          target.paidAt = new Date().toISOString();
+          target.approvalRef = "APR-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+        } else if (newStatus === "REJECTED") {
+          target.rejectedAt = new Date().toISOString();
+        }
+
+        localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+
+        if (channel) {
+          try {
+            channel.postMessage({
+              type: "ORDER_STATUS_CHANGED",
+              payload: { orderId: orderId, status: newStatus },
+              ts: Date.now()
+            });
+          } catch (_) {}
+        }
+
+        const labelText = newStatus === "PAID" ? "PAID (Lunas)" : "REJECTED (Ditolak)";
+        logEl.textContent =
+          "Terkirim realtime: " + orderId + " → " + labelText + " (" + formatWaktu(new Date().toISOString()) + ")";
+        showToast("🍥 Status " + orderId + " diperbarui ke " + newStatus);
+        renderSimulator(true);
+      }
+
+      function renderStatusBadge(status) {
+        if (status === "PAID") {
+          return '<span class="status-badge status-paid">&#10003; Paid / Lunas</span>';
+        }
+        if (status === "REJECTED") {
+          return '<span class="status-badge status-rejected">&#10005; Ditolak</span>';
+        }
+        return '<span class="status-badge status-pending"><span class="pulse-dot"></span> Menunggu Bayar</span>';
+      }
+
+      function getSignature(orders) {
+        return (
+          activeFilter +
+          "|" +
+          focusOrderId +
+          "|" +
+          orders
+            .map(function (o) {
+              return o.id + ":" + o.status + ":" + (o.paidAt || "") + ":" + (o.rejectedAt || "");
+            })
+            .join(",")
+        );
+      }
+
+      function renderSimulator(force) {
+        updateCartBadge();
+        const orders = getOrders();
+        const sig = getSignature(orders);
+        if (!force && sig === lastSignature) return;
+        lastSignature = sig;
+
+        if (orders.length === 0) {
+          root.innerHTML =
+            '<div class="panel empty-state">' +
+            '  <h3>Belum ada transaksi QRIS</h3>' +
+            '  <p>Pesanan yang dibuat dari Katalog &rarr; Keranjang &rarr; Checkout akan muncul di sini secara realtime untuk disimulasikan.</p>' +
+            '  <a href="../index.html" class="btn btn-primary">Mulai Belanja Squishy</a>' +
+            '</div>';
+          return;
+        }
+
+        const targetOrder = focusOrderId
+          ? orders.find(function (o) {
+              return o.id === focusOrderId;
+            })
+          : null;
+
+        let targetBannerHtml = "";
+        if (targetOrder && targetOrder.status === "PENDING") {
+          const targetItems = (targetOrder.items || [])
+            .map(function (it) {
+              return escapeHtml(it.nama) + " &times;" + it.qty;
+            })
+            .join(", ");
+          targetBannerHtml =
+            '<div class="target-card">' +
+            '  <div>' +
+            '    <div class="tx-id">' + escapeHtml(targetOrder.id) + '<span class="target-tag">Target QRIS</span></div>' +
+            '    <div class="tx-meta">' + escapeHtml(targetOrder.customer.nama) + ' &bull; ' + escapeHtml(targetOrder.qrisRef || "-") + ' &bull; ' + escapeHtml(formatWaktu(targetOrder.createdAt)) + '</div>' +
+            '    <div style="font-size:12.5px; margin-top:3px;">' + targetItems + '</div>' +
+            '    <div class="tx-amount" style="margin-top:4px;">' + formatRupiah(targetOrder.grandTotal) + '</div>' +
+            '  </div>' +
+            '  <div class="action-group">' +
+            '    <button type="button" class="btn btn-approve" data-action="PAID" data-id="' + escapeHtml(targetOrder.id) + '">&#10003; Approve</button>' +
+            '    <button type="button" class="btn btn-reject" data-action="REJECTED" data-id="' + escapeHtml(targetOrder.id) + '">&#10005; Reject</button>' +
+            '  </div>' +
+            '</div>';
+        }
+
+        const sortedOrders = orders.slice();
+        if (focusOrderId) {
+          sortedOrders.sort(function (a, b) {
+            if (a.id === focusOrderId) return -1;
+            if (b.id === focusOrderId) return 1;
+            return 0;
+          });
+        }
+
+        const filtered = sortedOrders.filter(function (o) {
+          return activeFilter === "ALL" ? true : o.status === activeFilter;
+        });
+
+        const countPending = orders.filter(function (o) {
+          return o.status === "PENDING";
+        }).length;
+        const countPaid = orders.filter(function (o) {
+          return o.status === "PAID";
+        }).length;
+        const countRejected = orders.filter(function (o) {
+          return o.status === "REJECTED";
+        }).length;
+
+        const filterButtons =
+          '<div class="filter-row">' +
+          '  <button type="button" class="btn btn-sm ' + (activeFilter === "ALL" ? "btn-primary" : "btn-outline") + '" data-filter="ALL">Semua (' + orders.length + ')</button>' +
+          '  <button type="button" class="btn btn-sm ' + (activeFilter === "PENDING" ? "btn-primary" : "btn-outline") + '" data-filter="PENDING">Menunggu (' + countPending + ')</button>' +
+          '  <button type="button" class="btn btn-sm ' + (activeFilter === "PAID" ? "btn-primary" : "btn-outline") + '" data-filter="PAID">Paid (' + countPaid + ')</button>' +
+          '  <button type="button" class="btn btn-sm ' + (activeFilter === "REJECTED" ? "btn-primary" : "btn-outline") + '" data-filter="REJECTED">Ditolak (' + countRejected + ')</button>' +
+          '</div>';
+
+        const rowsHtml =
+          filtered.length === 0
+            ? '<tr><td colspan="6" style="text-align:center; padding:28px; color:var(--muted);">Tidak ada transaksi dengan filter ini.</td></tr>'
+            : filtered
+                .map(function (o) {
+                  const isFocus = focusOrderId && o.id === focusOrderId;
+                  const itemsText = (o.items || [])
+                    .map(function (it) {
+                      return escapeHtml(it.nama) + " &times;" + it.qty;
+                    })
+                    .join(", ");
+
+                  const statusTime =
+                    o.status === "PAID" && o.paidAt
+                      ? '<div class="tx-meta">' + escapeHtml(formatWaktu(o.paidAt)) + (o.approvalRef ? " &bull; " + escapeHtml(o.approvalRef) : "") + '</div>'
+                      : o.status === "REJECTED" && o.rejectedAt
+                      ? '<div class="tx-meta">' + escapeHtml(formatWaktu(o.rejectedAt)) + '</div>'
+                      : "";
+
+                  const actionHtml =
+                    o.status === "PENDING"
+                      ? '<div class="action-group">' +
+                        '  <button type="button" class="btn btn-approve btn-sm" data-action="PAID" data-id="' + escapeHtml(o.id) + '">Approve</button>' +
+                        '  <button type="button" class="btn btn-reject btn-sm" data-action="REJECTED" data-id="' + escapeHtml(o.id) + '">Reject</button>' +
+                        '  <a href="../payment.html?order=' + encodeURIComponent(o.id) + '" class="btn btn-outline btn-sm">QRIS</a>' +
+                        '</div>'
+                      : '<div class="action-group">' +
+                        '  <a href="../thank-you.html?order=' + encodeURIComponent(o.id) + '" class="btn btn-outline btn-sm">Lihat Struk</a>' +
+                        '  <a href="../payment.html?order=' + encodeURIComponent(o.id) + '" class="btn btn-outline btn-sm">Status</a>' +
+                        '</div>';
+
+                  return (
+                    '<tr class="' + (isFocus ? "row-highlight" : "") + '">' +
+                    '  <td>' +
+                    '    <div class="tx-id">' + escapeHtml(o.id) + (isFocus ? '<span class="target-tag">Target</span>' : "") + '</div>' +
+                    '    <div class="tx-meta">' + escapeHtml(o.qrisRef || "-") + ' &bull; ' + escapeHtml(formatWaktu(o.createdAt)) + '</div>' +
+                    '  </td>' +
+                    '  <td>' +
+                    '    <div><strong>' + escapeHtml(o.customer.nama) + '</strong></div>' +
+                    '    <div class="tx-meta">' + escapeHtml(o.customer.kota) + (o.customer.telepon ? " &bull; " + escapeHtml(o.customer.telepon) : "") + '</div>' +
+                    '  </td>' +
+                    '  <td style="max-width:250px;">' + itemsText + '</td>' +
+                    '  <td>' +
+                    '    <div class="tx-meta">Sub: ' + formatRupiah(o.subtotal) + '</div>' +
+                    '    <div class="tx-amount">' + formatRupiah(o.grandTotal) + '</div>' +
+                    '  </td>' +
+                    '  <td>' +
+                    '    ' + renderStatusBadge(o.status) +
+                    '    ' + statusTime +
+                    '  </td>' +
+                    '  <td style="white-space:nowrap;">' + actionHtml + '</td>' +
+                    '</tr>'
+                  );
+                })
+                .join("");
+
+        root.innerHTML =
+          targetBannerHtml +
+          '<section class="panel">' +
+          '  <div class="panel-title">' +
+          '    <div class="panel-title-left">' +
+          '      <span>Daftar Transaksi &amp; Simulasi QRIS</span>' +
+          '      <span class="live-pill"><span class="dot"></span> LIVE SYNC</span>' +
+          '    </div>' +
+          '    <div class="panel-title-actions">' +
+          '      <a href="../history.html" class="btn btn-outline btn-sm">Riwayat Pelanggan</a>' +
+          '      <a href="../index.html" class="btn btn-outline btn-sm">Kembali ke Katalog</a>' +
+          '    </div>' +
+          '  </div>' +
+          '  ' + filterButtons +
+          '  <div class="table-wrap">' +
+          '    <table class="data-table">' +
+          '      <thead>' +
+          '        <tr>' +
+          '          <th>Invoice</th>' +
+          '          <th>Penerima</th>' +
+          '          <th>Item</th>' +
+          '          <th>Total</th>' +
+          '          <th>Status</th>' +
+          '          <th>Aksi Simulasi</th>' +
+          '        </tr>' +
+          '      </thead>' +
+          '      <tbody>' + rowsHtml + '</tbody>' +
+          '    </table>' +
+          '  </div>' +
+          '</section>';
+      }
+
+      root.addEventListener("click", function (e) {
+        const filterBtn = e.target.closest("[data-filter]");
+        if (filterBtn) {
+          activeFilter = filterBtn.getAttribute("data-filter");
+          renderSimulator(true);
+          return;
+        }
+
+        const actionBtn = e.target.closest("button[data-action]");
+        if (actionBtn) {
+          const action = actionBtn.getAttribute("data-action");
+          const id = actionBtn.getAttribute("data-id");
+          setOrderStatus(id, action);
+        }
+      });
+
+      window.addEventListener("storage", function (e) {
+        if (e.key === ORDERS_KEY || e.key === CART_KEY) {
+          renderSimulator(false);
+        }
+      });
+
+      if (channel) {
+        channel.addEventListener("message", function () {
+          renderSimulator(false);
+        });
+      }
+
+      setInterval(function () {
+        renderSimulator(false);
+      }, 1000);
+
+      renderSimulator(true);
+    })();
+  </script>
+</body>
+</html>
